@@ -41,7 +41,7 @@ class HomeViewController: UIViewController {
         title = "Serendipity Spin"
         
         // 设置Logo
-        logoImageView.image = UIImage(systemName: "sparkles")
+        logoImageView.image = UIImage(named: "logo")
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.tintColor = themeManager.accentTextColor
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
