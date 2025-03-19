@@ -20,7 +20,7 @@ class GameViewController: UIViewController {
     private var isSpinning = false
     private var reelsStoppedCount = 0
     private var categorySymbols: [String] = []
-    private var luckySymbols = ["star.fill", "heart.fill", "crown.fill"]
+    private var luckySymbols = ["7.circle.fill", "star.fill", "heart.fill", "crown.fill"]
     private var dataManager = DataManager.shared
     private let themeManager = ThemeManager.shared
     
@@ -161,7 +161,7 @@ class GameViewController: UIViewController {
     private func loadSymbols() {
         // 根据所选类别加载符号
         let categoryIcon = selectedCategory.icon
-        categorySymbols = Array(repeating: categoryIcon, count: 5) + luckySymbols
+        categorySymbols = Array(repeating: categoryIcon, count: 10) + luckySymbols
         
         // 为每个转轮设置符号
         for reel in reels {
