@@ -349,10 +349,7 @@ extension SettingsViewController: UITableViewDelegate {
             navigationController?.pushViewController(privacyVC, animated: true)
             
         case .about:
-            let aboutVC = UIViewController()
-            aboutVC.title = "About Us"
-            aboutVC.view.backgroundColor = themeManager.mainBackgroundColor
-            // 这里添加关于我们的具体内容
+            let aboutVC = AboutUsViewController()
             navigationController?.pushViewController(aboutVC, animated: true)
             
         case .version:
