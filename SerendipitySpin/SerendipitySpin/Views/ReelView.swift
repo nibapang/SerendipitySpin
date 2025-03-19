@@ -42,7 +42,7 @@ class ReelView: UIView {
         backgroundColor = .clear
         
         // 设置转轮背景
-        reelBackground.backgroundColor = .systemGray6
+        reelBackground.backgroundColor = .clear // 设置为透明
         reelBackground.layer.cornerRadius = 10
         reelBackground.translatesAutoresizingMaskIntoConstraints = false
         addSubview(reelBackground)
@@ -50,7 +50,7 @@ class ReelView: UIView {
         // 设置图标视图
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
-        iconImageView.tintColor = symbolColor // 使用symbolColor设置图标颜色
+        iconImageView.tintColor = symbolColor
         reelBackground.addSubview(iconImageView)
         
         // 约束设置
@@ -62,8 +62,8 @@ class ReelView: UIView {
             
             iconImageView.centerXAnchor.constraint(equalTo: reelBackground.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: reelBackground.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalTo: reelBackground.widthAnchor, multiplier: 0.6),
-            iconImageView.heightAnchor.constraint(equalTo: reelBackground.heightAnchor, multiplier: 0.6)
+            iconImageView.widthAnchor.constraint(equalToConstant: 34), // 固定大小
+            iconImageView.heightAnchor.constraint(equalToConstant: 34) // 固定大小
         ])
     }
     

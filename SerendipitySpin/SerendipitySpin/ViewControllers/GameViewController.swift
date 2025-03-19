@@ -11,7 +11,8 @@ class GameViewController: UIViewController {
     private let stopButton = UIButton(type: .system)
     private let statusLabel = UILabel()
     private let backgroundGradientLayer = CAGradientLayer()
-    
+    private let reelsBackgroundImageView = UIImageView()
+        
     // MARK: - Properties
     
     var selectedCategory: DecisionCategory = .travel
@@ -61,9 +62,11 @@ class GameViewController: UIViewController {
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(statusLabel)
         
+        // 设置转轮背景
+        setupReelsBackground()
+        
         // 设置转轮容器
         setupReelsStackView()
-        view.addSubview(reelsStackView)
         
         // 设置控制按钮容器
         setupControlButtonsStackView()
@@ -75,40 +78,53 @@ class GameViewController: UIViewController {
             statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            reelsStackView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 40),
-            reelsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            reelsStackView.heightAnchor.constraint(equalToConstant: 200),
+            reelsBackgroundImageView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 40),
+            reelsBackgroundImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            reelsBackgroundImageView.widthAnchor.constraint(equalToConstant: 400), // 调整为400x400
+            reelsBackgroundImageView.heightAnchor.constraint(equalToConstant: 400),
             
-            controlButtonsStackView.topAnchor.constraint(equalTo: reelsStackView.bottomAnchor, constant: 40),
+            reelsStackView.centerXAnchor.constraint(equalTo: reelsBackgroundImageView.centerXAnchor),
+            reelsStackView.centerYAnchor.constraint(equalTo: reelsBackgroundImageView.centerYAnchor, constant: -15), // 向上移动5点
+            reelsStackView.widthAnchor.constraint(equalToConstant: 150), // 适应三个34宽的ReelView加间距
+            reelsStackView.heightAnchor.constraint(equalToConstant: 34), // 与ReelView高度相同
+            
+            controlButtonsStackView.topAnchor.constraint(equalTo: reelsBackgroundImageView.bottomAnchor, constant: 40),
             controlButtonsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             controlButtonsStackView.heightAnchor.constraint(equalToConstant: 50)
         ])
+    }
+    
+    private func setupReelsBackground() {
+        reelsBackgroundImageView.image = UIImage(named: "gameBg")
+        reelsBackgroundImageView.contentMode = .scaleToFill
+        reelsBackgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(reelsBackgroundImageView)
+        view.addSubview(reelsStackView) // 确保 reelsStackView 在背景图片上面
     }
     
     private func setupReelsStackView() {
         reelsStackView.axis = .horizontal
         reelsStackView.distribution = .fillEqually
         reelsStackView.alignment = .center
-        reelsStackView.spacing = 20
+        reelsStackView.spacing = 24 // 增加间距，使总宽度为150（34*3 + 24*2 = 150）
         reelsStackView.translatesAutoresizingMaskIntoConstraints = false
+        reelsStackView.backgroundColor = .clear
         
         // 创建转轮视图
         for _ in 0..<reelCount {
-            let reelView = ReelView(frame: CGRect(x: 0, y: 0, width: 100, height: 150))
-            // 应用主题到转轮视图
-            reelView.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
-            reelView.layer.borderWidth = 2
-            reelView.layer.borderColor = themeManager.accentTextColor.withAlphaComponent(0.3).cgColor
+            let reelView = ReelView(frame: .zero)
+            reelView.backgroundColor = .clear
+            reelView.layer.borderWidth = 0
             reelView.layer.cornerRadius = 10
             
             reelsStackView.addArrangedSubview(reelView)
             reels.append(reelView)
             
-            // 设置转轮约束
+            // 设置固定大小约束
             reelView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                reelView.widthAnchor.constraint(equalToConstant: 100),
-                reelView.heightAnchor.constraint(equalToConstant: 150)
+                reelView.widthAnchor.constraint(equalToConstant: 34),
+                reelView.heightAnchor.constraint(equalToConstant: 34)
             ])
         }
     }
