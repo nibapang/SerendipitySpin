@@ -5,6 +5,7 @@ class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewControllers()
+        applyTheme()
     }
     
     private func setupViewControllers() {
@@ -41,5 +42,10 @@ class MainTabBarController: UITabBarController {
         // 设置标签栏外观
         tabBar.tintColor = .systemBlue
         tabBar.unselectedItemTintColor = .systemGray
+    }
+    
+    private func applyTheme() {
+        // 应用主题到标签栏
+        ThemeManager.shared.applyThemeToTabBar(tabBar)
     }
 } 

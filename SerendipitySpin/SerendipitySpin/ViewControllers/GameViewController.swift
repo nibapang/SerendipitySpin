@@ -10,6 +10,7 @@ class GameViewController: UIViewController {
     private let startButton = UIButton(type: .system)
     private let stopButton = UIButton(type: .system)
     private let statusLabel = UILabel()
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
@@ -20,6 +21,7 @@ class GameViewController: UIViewController {
     private var categorySymbols: [String] = []
     private var luckySymbols = ["star.fill", "heart.fill", "crown.fill"]
     private var dataManager = DataManager.shared
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Lifecycle
     
@@ -29,17 +31,28 @@ class GameViewController: UIViewController {
         loadSymbols()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "\(selectedCategory.rawValue) Decision"
         
         // 设置状态标签
         statusLabel.text = "Tap 'Start' to spin the reels"
         statusLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         statusLabel.textAlignment = .center
-        statusLabel.textColor = .label
+        statusLabel.textColor = themeManager.primaryTextColor
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(statusLabel)
         
@@ -77,6 +90,12 @@ class GameViewController: UIViewController {
         // 创建转轮视图
         for _ in 0..<reelCount {
             let reelView = ReelView(frame: CGRect(x: 0, y: 0, width: 100, height: 150))
+            // 应用主题到转轮视图
+            reelView.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+            reelView.layer.borderWidth = 2
+            reelView.layer.borderColor = themeManager.accentTextColor.withAlphaComponent(0.3).cgColor
+            reelView.layer.cornerRadius = 10
+            
             reelsStackView.addArrangedSubview(reelView)
             reels.append(reelView)
             
@@ -99,21 +118,18 @@ class GameViewController: UIViewController {
         // 设置开始按钮
         startButton.setTitle("Start", for: .normal)
         startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        startButton.backgroundColor = .systemBlue
-        startButton.tintColor = .white
-        startButton.layer.cornerRadius = 10
+        themeManager.styleButton(startButton)
         startButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
         startButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
         
         // 设置停止按钮
         stopButton.setTitle("Stop", for: .normal)
         stopButton.setImage(UIImage(systemName: "stop.fill"), for: .normal)
-        stopButton.backgroundColor = .systemRed
-        stopButton.tintColor = .white
-        stopButton.layer.cornerRadius = 10
+        themeManager.styleButton(stopButton, style: .special)
         stopButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
         stopButton.addTarget(self, action: #selector(stopButtonTapped), for: .touchUpInside)
         stopButton.isEnabled = false
+        stopButton.alpha = 0.7  // 初始状态为禁用，降低透明度
         
         controlButtonsStackView.addArrangedSubview(startButton)
         controlButtonsStackView.addArrangedSubview(stopButton)
@@ -129,6 +145,8 @@ class GameViewController: UIViewController {
         // 为每个转轮设置符号
         for reel in reels {
             reel.setSymbols(categorySymbols.shuffled())
+            // 设置转轮中图标的颜色
+            reel.symbolColor = themeManager.accentTextColor
         }
     }
     
@@ -142,7 +160,9 @@ class GameViewController: UIViewController {
         statusLabel.text = "Spinning..."
         
         startButton.isEnabled = false
+        startButton.alpha = 0.7
         stopButton.isEnabled = true
+        stopButton.alpha = 1.0
         
         // 播放开始音效
         SoundManager.shared.playSpinSound()
@@ -157,6 +177,7 @@ class GameViewController: UIViewController {
         guard isSpinning else { return }
         
         stopButton.isEnabled = false
+        stopButton.alpha = 0.7
         statusLabel.text = "Stopping..."
         
         // 播放停止音效
@@ -177,6 +198,7 @@ class GameViewController: UIViewController {
             statusLabel.text = "No decisions available for this category"
             isSpinning = false
             startButton.isEnabled = true
+            startButton.alpha = 1.0
             return
         }
         
@@ -209,6 +231,7 @@ class GameViewController: UIViewController {
     private func handleSpinResult(finalSymbols: [String], decision: Decision) {
         isSpinning = false
         startButton.isEnabled = true
+        startButton.alpha = 1.0
         
         // 检查是否触发幸运奖励
         let isLuckyResult = finalSymbols.contains { luckySymbols.contains($0) }

@@ -9,10 +9,12 @@ class HomeViewController: UIViewController {
     private let subtitleLabel = UILabel()
     private let categorySegmentedControl = UISegmentedControl()
     private let startButton = UIButton(type: .system)
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
     private var selectedCategory: DecisionCategory = .travel
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Lifecycle
     
@@ -21,16 +23,27 @@ class HomeViewController: UIViewController {
         setupView()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "Serendipity Spin"
         
         // 设置Logo
         logoImageView.image = UIImage(systemName: "sparkles")
         logoImageView.contentMode = .scaleAspectFit
-        logoImageView.tintColor = .systemBlue
+        logoImageView.tintColor = themeManager.accentTextColor
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(logoImageView)
         
@@ -38,7 +51,7 @@ class HomeViewController: UIViewController {
         titleLabel.text = "Serendipity Spin"
         titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         titleLabel.textAlignment = .center
-        titleLabel.textColor = .label
+        titleLabel.textColor = themeManager.primaryTextColor
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
         
@@ -46,7 +59,7 @@ class HomeViewController: UIViewController {
         subtitleLabel.text = "Let fate decide your next adventure"
         subtitleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         subtitleLabel.textAlignment = .center
-        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.textColor = themeManager.secondaryTextColor
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(subtitleLabel)
         
@@ -57,9 +70,7 @@ class HomeViewController: UIViewController {
         // 设置开始按钮
         startButton.setTitle("Start Decision", for: .normal)
         startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        startButton.backgroundColor = .systemBlue
-        startButton.tintColor = .white
-        startButton.layer.cornerRadius = 12
+        themeManager.styleButton(startButton)
         startButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 24, bottom: 12, right: 24)
         startButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
         startButton.translatesAutoresizingMaskIntoConstraints = false
@@ -98,7 +109,13 @@ class HomeViewController: UIViewController {
             categorySegmentedControl.insertSegment(with: UIImage(systemName: category.icon), at: index, animated: false)
         }
         
+        // 设置分段控件外观
         categorySegmentedControl.selectedSegmentIndex = 0
+        categorySegmentedControl.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.6)
+        categorySegmentedControl.selectedSegmentTintColor = themeManager.primaryButtonColor
+        categorySegmentedControl.setTitleTextAttributes([.foregroundColor: themeManager.secondaryTextColor], for: .normal)
+        categorySegmentedControl.setTitleTextAttributes([.foregroundColor: themeManager.primaryTextColor], for: .selected)
+        
         categorySegmentedControl.addTarget(self, action: #selector(categoryChanged), for: .valueChanged)
         categorySegmentedControl.translatesAutoresizingMaskIntoConstraints = false
     }

@@ -5,11 +5,13 @@ class SettingsViewController: UIViewController {
     // MARK: - UI Elements
     
     private let tableView = UITableView(frame: .zero, style: .grouped)
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
     private let settings = Settings.shared
     private let dataManager = DataManager.shared
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Section and Row Types
     
@@ -51,16 +53,29 @@ class SettingsViewController: UIViewController {
         tableView.reloadData()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "Settings"
         
         // 设置表格视图
         tableView.delegate = self
         tableView.dataSource = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear
+        tableView.separatorColor = themeManager.borderColor
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -117,6 +132,14 @@ extension SettingsViewController: UITableViewDataSource {
         return sectionType.title
     }
     
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.textLabel?.textColor = themeManager.accentTextColor
+            headerView.textLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            headerView.contentView.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.8)
+        }
+    }
+    
     // MARK: - Cell Configuration
     
     private func appearanceCell(for indexPath: IndexPath) -> UITableViewCell {
@@ -127,13 +150,20 @@ extension SettingsViewController: UITableViewDataSource {
         let isUserInterfaceStyleDark = traitCollection.userInterfaceStyle == .dark
         cell.detailTextLabel?.text = isUserInterfaceStyleDark ? "Dark" : "Light"
         
+        // 设置单元格样式
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+        cell.textLabel?.textColor = themeManager.primaryTextColor
+        cell.detailTextLabel?.textColor = themeManager.secondaryTextColor
+        cell.tintColor = themeManager.primaryButtonColor
+        
         // 设置图标
         let themeIcon = UIImage(systemName: "paintbrush.fill")
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
         imageView.image = themeIcon
-        imageView.tintColor = .systemBlue
+        imageView.tintColor = themeManager.accentTextColor
         imageView.contentMode = .scaleAspectFit
         cell.imageView?.image = themeIcon
+        cell.imageView?.tintColor = themeManager.accentTextColor
         
         return cell
     }
@@ -144,6 +174,7 @@ extension SettingsViewController: UITableViewDataSource {
         }
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "switchCell", for: indexPath) as! SwitchTableViewCell
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
         
         switch row {
         case .sound:
@@ -162,6 +193,11 @@ extension SettingsViewController: UITableViewDataSource {
             }
         }
         
+        // 应用主题
+        cell.titleLabel.textColor = themeManager.primaryTextColor
+        cell.iconImageView.tintColor = themeManager.accentTextColor
+        cell.switchControl.onTintColor = themeManager.primaryButtonColor
+        
         return cell
     }
     
@@ -172,10 +208,16 @@ extension SettingsViewController: UITableViewDataSource {
         cell.textLabel?.text = category.rawValue
         cell.accessoryType = .disclosureIndicator
         
+        // 设置单元格样式
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+        cell.textLabel?.textColor = themeManager.primaryTextColor
+        cell.detailTextLabel?.textColor = themeManager.secondaryTextColor
+        cell.tintColor = themeManager.primaryButtonColor
+        
         // 设置图标
         let icon = UIImage(systemName: category.icon)
         cell.imageView?.image = icon
-        cell.imageView?.tintColor = .systemBlue
+        cell.imageView?.tintColor = themeManager.accentTextColor
         
         // 显示该类别的决策数量
         let count = dataManager.getDecisions(for: category).count
@@ -237,18 +279,19 @@ class SwitchTableViewCell: UITableViewCell {
         
         // 设置图标
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .systemBlue
+        iconImageView.tintColor = ThemeManager.shared.accentTextColor
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(iconImageView)
         
         // 设置标题
         titleLabel.font = UIFont.systemFont(ofSize: 16)
-        titleLabel.textColor = .label
+        titleLabel.textColor = ThemeManager.shared.primaryTextColor
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
         
         // 设置开关
-        switchControl.addTarget(self, action: #selector(switchValueDidChange(_:)), for: .valueChanged)
+        switchControl.onTintColor = ThemeManager.shared.primaryButtonColor
+        switchControl.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
         switchControl.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(switchControl)
         
@@ -267,7 +310,7 @@ class SwitchTableViewCell: UITableViewCell {
         ])
     }
     
-    @objc private func switchValueDidChange(_ sender: UISwitch) {
+    @objc private func switchChanged(_ sender: UISwitch) {
         switchValueChanged?(sender.isOn)
     }
 } 

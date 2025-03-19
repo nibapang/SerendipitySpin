@@ -15,12 +15,14 @@ class ResultViewController: UIViewController {
     private let tryAgainButton = UIButton(type: .system)
     private let saveButton = UIButton(type: .system)
     private let shareButton = UIButton(type: .system)
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
     var decision: Decision!
     var isLuckyResult: Bool = false
     private let dataManager = DataManager.shared
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Lifecycle
     
@@ -30,10 +32,21 @@ class ResultViewController: UIViewController {
         displayResult()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "Your Decision"
         navigationItem.hidesBackButton = true
         
@@ -68,12 +81,8 @@ class ResultViewController: UIViewController {
     }
     
     private func setupCardView() {
-        cardView.backgroundColor = .secondarySystemBackground
-        cardView.layer.cornerRadius = 16
-        cardView.layer.shadowColor = UIColor.black.cgColor
-        cardView.layer.shadowOpacity = 0.1
-        cardView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        cardView.layer.shadowRadius = 8
+        // 应用卡片样式
+        themeManager.styleCard(cardView)
         cardView.translatesAutoresizingMaskIntoConstraints = false
         
         // 设置图标
@@ -90,7 +99,7 @@ class ResultViewController: UIViewController {
         
         iconImageView.image = UIImage(systemName: iconName)
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .systemBlue
+        iconImageView.tintColor = themeManager.accentTextColor
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(iconImageView)
         
@@ -98,7 +107,7 @@ class ResultViewController: UIViewController {
         titleLabel.text = decision.title
         titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         titleLabel.textAlignment = .center
-        titleLabel.textColor = .label
+        titleLabel.textColor = themeManager.primaryTextColor
         titleLabel.numberOfLines = 0
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(titleLabel)
@@ -107,7 +116,7 @@ class ResultViewController: UIViewController {
         detailsLabel.text = decision.details ?? ""
         detailsLabel.font = UIFont.systemFont(ofSize: 16)
         detailsLabel.textAlignment = .center
-        detailsLabel.textColor = .secondaryLabel
+        detailsLabel.textColor = themeManager.secondaryTextColor
         detailsLabel.numberOfLines = 0
         detailsLabel.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(detailsLabel)
@@ -131,15 +140,17 @@ class ResultViewController: UIViewController {
     }
     
     private func setupLuckyBanner() {
-        luckyBannerView.backgroundColor = .systemYellow
+        luckyBannerView.backgroundColor = themeManager.specialButtonColor
         luckyBannerView.layer.cornerRadius = 12
+        luckyBannerView.layer.borderWidth = 1
+        luckyBannerView.layer.borderColor = themeManager.accentTextColor.cgColor
         luckyBannerView.translatesAutoresizingMaskIntoConstraints = false
         luckyBannerView.isHidden = !isLuckyResult
         
         // 设置幸运图标
         luckyIconImageView.image = UIImage(systemName: "sparkles")
         luckyIconImageView.contentMode = .scaleAspectFit
-        luckyIconImageView.tintColor = .white
+        luckyIconImageView.tintColor = themeManager.primaryTextColor
         luckyIconImageView.translatesAutoresizingMaskIntoConstraints = false
         luckyBannerView.addSubview(luckyIconImageView)
         
@@ -147,7 +158,7 @@ class ResultViewController: UIViewController {
         luckyLabel.text = "Lucky Bonus! Double the fun!"
         luckyLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         luckyLabel.textAlignment = .center
-        luckyLabel.textColor = .white
+        luckyLabel.textColor = themeManager.primaryTextColor
         luckyLabel.translatesAutoresizingMaskIntoConstraints = false
         luckyBannerView.addSubview(luckyLabel)
         
@@ -173,27 +184,21 @@ class ResultViewController: UIViewController {
         // 设置尝试按钮
         tryAgainButton.setTitle("Try Again", for: .normal)
         tryAgainButton.setImage(UIImage(systemName: "gobackward"), for: .normal)
-        tryAgainButton.backgroundColor = .systemBlue
-        tryAgainButton.tintColor = .white
-        tryAgainButton.layer.cornerRadius = 10
+        themeManager.styleButton(tryAgainButton)
         tryAgainButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         tryAgainButton.addTarget(self, action: #selector(tryAgainButtonTapped), for: .touchUpInside)
         
         // 设置保存按钮
         saveButton.setTitle("Save", for: .normal)
         saveButton.setImage(UIImage(systemName: "tray.and.arrow.down.fill"), for: .normal)
-        saveButton.backgroundColor = .systemGreen
-        saveButton.tintColor = .white
-        saveButton.layer.cornerRadius = 10
+        themeManager.styleButton(saveButton, style: .accent)
         saveButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         
         // 设置分享按钮
         shareButton.setTitle("Share", for: .normal)
         shareButton.setImage(UIImage(systemName: "square.and.arrow.up"), for: .normal)
-        shareButton.backgroundColor = .systemIndigo
-        shareButton.tintColor = .white
-        shareButton.layer.cornerRadius = 10
+        themeManager.styleButton(shareButton, style: .primary)
         shareButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
         

@@ -6,11 +6,13 @@ class HistoryViewController: UIViewController {
     
     private let tableView = UITableView(frame: .zero, style: .grouped)
     private let emptyStateLabel = UILabel()
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
     private let dataManager = DataManager.shared
     private var historyItems: [Decision] = []
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Lifecycle
     
@@ -24,10 +26,21 @@ class HistoryViewController: UIViewController {
         loadData()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "History"
         
         // 添加清空按钮
@@ -37,17 +50,26 @@ class HistoryViewController: UIViewController {
             target: self,
             action: #selector(clearAllButtonTapped)
         )
+        navigationItem.rightBarButtonItem?.tintColor = themeManager.accentTextColor
         
         // 设置表格视图
         tableView.delegate = self
         tableView.dataSource = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = themeManager.borderColor
+        
+        // 设置表格视图外观
+        let headerFooterAppearance = UITableViewHeaderFooterView.appearance()
+        headerFooterAppearance.tintColor = themeManager.mainBackgroundColor
+        
         view.addSubview(tableView)
         
         // 设置空状态标签
         emptyStateLabel.text = "No history found. Make some decisions first."
         emptyStateLabel.textAlignment = .center
-        emptyStateLabel.textColor = .secondaryLabel
+        emptyStateLabel.textColor = themeManager.secondaryTextColor
         emptyStateLabel.font = UIFont.systemFont(ofSize: 16)
         emptyStateLabel.translatesAutoresizingMaskIntoConstraints = false
         emptyStateLabel.isHidden = true
@@ -116,8 +138,12 @@ extension HistoryViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let historyItem = historyItems[indexPath.row]
         
+        // 设置单元格样式
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+        
         var content = cell.defaultContentConfiguration()
         content.text = historyItem.title
+        content.textProperties.color = themeManager.primaryTextColor
         
         // 使用合适的图标
         var iconName = "doc.text.fill"
@@ -128,7 +154,7 @@ extension HistoryViewController: UITableViewDataSource {
             }
         }
         content.image = UIImage(systemName: iconName)
-        content.imageProperties.tintColor = .systemBlue
+        content.imageProperties.tintColor = themeManager.accentTextColor
         
         // 添加详细信息和日期
         var secondaryText = historyItem.category
@@ -143,11 +169,12 @@ extension HistoryViewController: UITableViewDataSource {
         secondaryText += "\n\(dateFormatter.string(from: historyItem.date))"
         
         content.secondaryText = secondaryText
-        content.secondaryTextProperties.color = .secondaryLabel
+        content.secondaryTextProperties.color = themeManager.secondaryTextColor
         content.secondaryTextProperties.font = UIFont.systemFont(ofSize: 12)
         
         cell.contentConfiguration = content
         cell.accessoryType = .disclosureIndicator
+        cell.tintColor = themeManager.primaryButtonColor
         
         return cell
     }
@@ -183,5 +210,13 @@ extension HistoryViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return historyItems.isEmpty ? nil : "Previous Decisions"
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.textLabel?.textColor = themeManager.accentTextColor
+            headerView.textLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            headerView.contentView.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.8)
+        }
     }
 } 

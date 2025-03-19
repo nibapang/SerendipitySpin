@@ -21,9 +21,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // 创建窗口
         window = UIWindow(windowScene: windowScene)
         
-        // 设置主标签栏控制器为根视图控制器
-        let mainTabBarController = MainTabBarController()
-        window?.rootViewController = mainTabBarController
+        // 设置根视图控制器
+        window?.rootViewController = MainTabBarController()
+        
+        // 应用主题
+        ThemeManager.shared.applyThemeToApplication()
+        
+        // 显示窗口
         window?.makeKeyAndVisible()
     }
 

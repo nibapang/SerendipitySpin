@@ -6,12 +6,14 @@ class DecisionListViewController: UIViewController {
     
     private let tableView = UITableView()
     private let emptyStateLabel = UILabel()
+    private let backgroundGradientLayer = CAGradientLayer()
     
     // MARK: - Properties
     
     private let category: DecisionCategory
     private let dataManager = DataManager.shared
     private var decisions: [Decision] = []
+    private let themeManager = ThemeManager.shared
     
     // MARK: - Initialization
     
@@ -32,10 +34,21 @@ class DecisionListViewController: UIViewController {
         loadData()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backgroundGradientLayer.frame = view.bounds
+    }
+    
     // MARK: - UI Setup
     
     private func setupView() {
-        view.backgroundColor = .systemBackground
+        // 设置背景渐变
+        backgroundGradientLayer.colors = [themeManager.mainBackgroundColor.cgColor, themeManager.secondaryBackgroundColor.cgColor]
+        backgroundGradientLayer.locations = [0.0, 1.0]
+        view.layer.insertSublayer(backgroundGradientLayer, at: 0)
+        
+        // 设置导航栏
+        themeManager.applyThemeToNavigationBar(navigationController!.navigationBar)
         title = "\(category.rawValue) Decisions"
         
         // 设置导航栏右侧添加按钮
@@ -44,17 +57,21 @@ class DecisionListViewController: UIViewController {
             target: self,
             action: #selector(addButtonTapped)
         )
+        navigationItem.rightBarButtonItem?.tintColor = themeManager.accentTextColor
         
         // 设置表格视图
         tableView.delegate = self
         tableView.dataSource = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = themeManager.borderColor
         view.addSubview(tableView)
         
         // 设置空状态标签
         emptyStateLabel.text = "No decisions found. Tap + to add."
         emptyStateLabel.textAlignment = .center
-        emptyStateLabel.textColor = .secondaryLabel
+        emptyStateLabel.textColor = themeManager.secondaryTextColor
         emptyStateLabel.font = UIFont.systemFont(ofSize: 16)
         emptyStateLabel.translatesAutoresizingMaskIntoConstraints = false
         emptyStateLabel.isHidden = true
@@ -138,13 +155,19 @@ extension DecisionListViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let decision = decisions[indexPath.row]
         
+        // 设置单元格样式
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+        
         var content = cell.defaultContentConfiguration()
         content.text = decision.title
+        content.textProperties.color = themeManager.primaryTextColor
         content.secondaryText = decision.details
+        content.secondaryTextProperties.color = themeManager.secondaryTextColor
         content.image = UIImage(systemName: category.icon)
-        content.imageProperties.tintColor = .systemBlue
+        content.imageProperties.tintColor = themeManager.accentTextColor
         
         cell.contentConfiguration = content
+        cell.tintColor = themeManager.primaryButtonColor
         
         return cell
     }

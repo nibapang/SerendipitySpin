@@ -16,6 +16,14 @@ class ReelView: UIView {
     private var shouldStop = false
     private var stopPosition: Int?
     
+    // 添加符号颜色属性
+    var symbolColor: UIColor = .label {
+        didSet {
+            // 当颜色改变时更新图标颜色
+            iconImageView.tintColor = symbolColor
+        }
+    }
+    
     // MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -42,7 +50,7 @@ class ReelView: UIView {
         // 设置图标视图
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
-        iconImageView.tintColor = .label
+        iconImageView.tintColor = symbolColor // 使用symbolColor设置图标颜色
         reelBackground.addSubview(iconImageView)
         
         // 约束设置
@@ -118,6 +126,7 @@ class ReelView: UIView {
         // 更新图标
         if let image = UIImage(systemName: symbolName) {
             iconImageView.image = image
+            iconImageView.tintColor = symbolColor // 确保更新图标时应用当前颜色
             
             // 添加缩放动画
             if Settings.shared.isAnimationEnabled {
