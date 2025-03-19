@@ -1,0 +1,224 @@
+import UIKit
+
+class GameViewController: UIViewController {
+    
+    // MARK: - UI Elements
+    
+    private let reelsStackView = UIStackView()
+    private var reels: [ReelView] = []
+    private let controlButtonsStackView = UIStackView()
+    private let startButton = UIButton(type: .system)
+    private let stopButton = UIButton(type: .system)
+    private let statusLabel = UILabel()
+    
+    // MARK: - Properties
+    
+    var selectedCategory: DecisionCategory = .travel
+    private let reelCount = 3
+    private var isSpinning = false
+    private var reelsStoppedCount = 0
+    private var categorySymbols: [String] = []
+    private var luckySymbols = ["star.fill", "heart.fill", "crown.fill"]
+    private var dataManager = DataManager.shared
+    
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupView()
+        loadSymbols()
+    }
+    
+    // MARK: - UI Setup
+    
+    private func setupView() {
+        view.backgroundColor = .systemBackground
+        title = "\(selectedCategory.rawValue) Decision"
+        
+        // 设置状态标签
+        statusLabel.text = "Tap 'Start' to spin the reels"
+        statusLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        statusLabel.textAlignment = .center
+        statusLabel.textColor = .label
+        statusLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(statusLabel)
+        
+        // 设置转轮容器
+        setupReelsStackView()
+        view.addSubview(reelsStackView)
+        
+        // 设置控制按钮容器
+        setupControlButtonsStackView()
+        view.addSubview(controlButtonsStackView)
+        
+        // 设置约束
+        NSLayoutConstraint.activate([
+            statusLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            reelsStackView.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 40),
+            reelsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            reelsStackView.heightAnchor.constraint(equalToConstant: 200),
+            
+            controlButtonsStackView.topAnchor.constraint(equalTo: reelsStackView.bottomAnchor, constant: 40),
+            controlButtonsStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            controlButtonsStackView.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+    
+    private func setupReelsStackView() {
+        reelsStackView.axis = .horizontal
+        reelsStackView.distribution = .fillEqually
+        reelsStackView.alignment = .center
+        reelsStackView.spacing = 20
+        reelsStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // 创建转轮视图
+        for _ in 0..<reelCount {
+            let reelView = ReelView(frame: CGRect(x: 0, y: 0, width: 100, height: 150))
+            reelsStackView.addArrangedSubview(reelView)
+            reels.append(reelView)
+            
+            // 设置转轮约束
+            reelView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                reelView.widthAnchor.constraint(equalToConstant: 100),
+                reelView.heightAnchor.constraint(equalToConstant: 150)
+            ])
+        }
+    }
+    
+    private func setupControlButtonsStackView() {
+        controlButtonsStackView.axis = .horizontal
+        controlButtonsStackView.distribution = .fillEqually
+        controlButtonsStackView.alignment = .center
+        controlButtonsStackView.spacing = 30
+        controlButtonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // 设置开始按钮
+        startButton.setTitle("Start", for: .normal)
+        startButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        startButton.backgroundColor = .systemBlue
+        startButton.tintColor = .white
+        startButton.layer.cornerRadius = 10
+        startButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
+        startButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
+        
+        // 设置停止按钮
+        stopButton.setTitle("Stop", for: .normal)
+        stopButton.setImage(UIImage(systemName: "stop.fill"), for: .normal)
+        stopButton.backgroundColor = .systemRed
+        stopButton.tintColor = .white
+        stopButton.layer.cornerRadius = 10
+        stopButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 20, bottom: 10, right: 20)
+        stopButton.addTarget(self, action: #selector(stopButtonTapped), for: .touchUpInside)
+        stopButton.isEnabled = false
+        
+        controlButtonsStackView.addArrangedSubview(startButton)
+        controlButtonsStackView.addArrangedSubview(stopButton)
+    }
+    
+    // MARK: - Data and Logic
+    
+    private func loadSymbols() {
+        // 根据所选类别加载符号
+        let categoryIcon = selectedCategory.icon
+        categorySymbols = Array(repeating: categoryIcon, count: 5) + luckySymbols
+        
+        // 为每个转轮设置符号
+        for reel in reels {
+            reel.setSymbols(categorySymbols.shuffled())
+        }
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func startButtonTapped() {
+        guard !isSpinning else { return }
+        
+        isSpinning = true
+        reelsStoppedCount = 0
+        statusLabel.text = "Spinning..."
+        
+        startButton.isEnabled = false
+        stopButton.isEnabled = true
+        
+        // 播放开始音效
+        SoundManager.shared.playSpinSound()
+        
+        // 开始所有转轮
+        for reel in reels {
+            reel.startSpinning()
+        }
+    }
+    
+    @objc private func stopButtonTapped() {
+        guard isSpinning else { return }
+        
+        stopButton.isEnabled = false
+        statusLabel.text = "Stopping..."
+        
+        // 播放停止音效
+        SoundManager.shared.playStopSound()
+        
+        // 依次停止转轮
+        stopReelsSequentially()
+    }
+    
+    private func stopReelsSequentially() {
+        // 创建随机结果
+        var finalSymbols: [String] = []
+        let decisions = dataManager.getDecisions(for: selectedCategory)
+        
+        // 确保至少有一个决策
+        guard !decisions.isEmpty else {
+            // 如果没有决策，显示错误
+            statusLabel.text = "No decisions available for this category"
+            isSpinning = false
+            startButton.isEnabled = true
+            return
+        }
+        
+        // 随机决策
+        let randomDecision = decisions.randomElement()!
+        
+        // 随机停止每个转轮
+        for (index, reel) in reels.enumerated() {
+            // 延迟停止每个转轮
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(index) * 0.5) {
+                // 随机选择转轮最终显示的符号
+                let symbols = reel.symbols
+                let randomIndex = Int.random(in: 0..<symbols.count)
+                reel.stopSpinning(atIndex: randomIndex)
+                
+                if let symbol = reel.getCurrentSymbol() {
+                    finalSymbols.append(symbol)
+                }
+                
+                // 检查是否所有转轮都已停止
+                self.reelsStoppedCount += 1
+                if self.reelsStoppedCount == self.reelCount {
+                    // 所有转轮都已停止
+                    self.handleSpinResult(finalSymbols: finalSymbols, decision: randomDecision)
+                }
+            }
+        }
+    }
+    
+    private func handleSpinResult(finalSymbols: [String], decision: Decision) {
+        isSpinning = false
+        startButton.isEnabled = true
+        
+        // 检查是否触发幸运奖励
+        let isLuckyResult = finalSymbols.contains { luckySymbols.contains($0) }
+        
+        // 显示结果页面
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            let resultVC = ResultViewController()
+            resultVC.decision = decision
+            resultVC.isLuckyResult = isLuckyResult
+            self.navigationController?.pushViewController(resultVC, animated: true)
+        }
+    }
+} 

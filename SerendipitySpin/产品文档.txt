@@ -1,0 +1,166 @@
+请按照下述产品开发文档，生成Serendipity Spin app
+
+Serendipity Spin iOS UIKit 产品开发文档
+
+1. 产品概述
+	•	产品名称： Serendipity Spin
+	•	目标平台： iOS 13+
+	•	开发技术： Swift + UIKit
+	•	核心功能：
+	•	利用老虎机的随机机制为用户提供旅游、美食、电影等决策建议；
+	•	通过转轮动画、音效以及特殊幸运奖励增强决策过程的趣味性；
+	•	支持自定义决策库与历史记录管理；
+	•	使用 iOS 系统自带的图标（SF Symbols）及标准系统配色，确保界面风格统一并兼容浅色和暗黑模式。
+	•	应用内文案： 所有应用内的文案均为英文。
+	•	所有新增的文件放入SerendipitySpin目录下
+⸻
+
+2. 页面详细说明
+
+2.1 首页
+
+功能与展示：
+	•	品牌标识：
+	•	显示应用 Logo 与标题 “Serendipity Spin”。
+	•	Logo 可采用 SF Symbols 中的 “star.fill” 或 “sparkles” 图标，并搭配简洁的文字标识。
+	•	决策类别选择：
+	•	通过 UISegmentedControl 或一组 UIButton 显示决策类型（例如：Travel、Food、Movies、Entertainment）。
+	•	推荐使用以下系统图标：
+	•	旅游：“airplane”
+	•	美食：“fork.knife”
+	•	电影：“film”
+	•	娱乐：“gamecontroller”
+	•	按钮背景使用 systemBackground，文字和图标使用 label 色，确保在浅色和暗黑模式下均清晰可见。
+	•	启动入口：
+	•	显眼的 “Start Decision” 按钮，采用系统 UIButton（圆角矩形或系统样式），背景色为 systemBlue，文字为白色。
+	•	提示说明：
+	•	简短说明（例如 “Let fate decide your next adventure”），使用 secondaryLabel 颜色显示。
+
+配色方案：
+	•	背景色：systemBackground
+	•	主色调：systemBlue（用于按钮和重点提示）
+	•	文字色：label 与 secondaryLabel
+	•	所有图标与按钮均遵循系统标准，自动适应浅色和暗黑模式。
+
+⸻
+
+2.2 游戏页面
+
+功能与展示：
+	•	转轮展示区：
+	•	页面中央展示 3 至 5 个转轮（自定义 UIView 子类），显示随机生成的决策符号。
+	•	使用 SF Symbols 表示图标：
+	•	对于决策元素：依据类别使用相关图标（如旅游使用 “location”，美食使用 “fork.knife”）；
+	•	对于幸运符号：使用 “sparkles” 或 “heart.fill”。
+	•	每个转轮背景采用半透明的 systemGray6。
+	•	控制按钮：
+	•	“Start/Reset” 按钮与 “Stop” 按钮均采用系统 UIButton 样式。
+	•	推荐图标：
+	•	启动按钮：“play.fill”
+	•	停止按钮：“pause.fill” 或 “stop.fill”
+	•	按钮背景为 systemBlue，文字及图标为白色。
+	•	动画与音效反馈：
+	•	使用 UIView.animate 或 CADisplayLink 实现平滑动画，模拟转轮的旋转、减速与停止。
+	•	可使用类似 “arrow.2.circlepath” 的图标作为动画提示。
+	•	状态提示文字使用 label 色，背景保持与系统背景一致。
+
+配色方案：
+	•	页面背景：systemBackground（可选渐变效果，浅色模式下使用柔和色调，暗黑模式下使用深色背景）
+	•	转轮背景：systemGray6
+	•	按钮背景：systemBlue
+	•	状态文字：label
+
+⸻
+
+2.3 结果页面
+
+功能与展示：
+	•	决策展示：
+	•	以卡片式视图或模态弹窗展示最终决策建议。
+	•	卡片顶部可显示与决策相关的 SF Symbols 图标（例如，美食推荐中使用 “fork.knife”）。
+	•	建议标题使用 “title1” 样式，详细描述使用 “body” 样式，均采用系统颜色。
+	•	幸运奖励提示：
+	•	当特殊符号组合触发奖励时，显示奖励提示区域。
+	•	推荐使用 “sparkles” 或 “crown.fill” 图标，背景色设为 systemYellow，图标为白色。
+	•	操作按钮：
+	•	“Try Again” 按钮，建议搭配 “gobackward” 图标；
+	•	“Save Record” 按钮，建议搭配 “tray.and.arrow.down.fill” 图标；
+	•	“Share” 按钮，建议搭配 “square.and.arrow.up” 图标。
+	•	所有按钮均采用系统 UIButton 样式，背景色为 systemBlue，文字和图标为白色。
+
+配色方案：
+	•	背景色：systemBackground
+	•	卡片背景：secondarySystemBackground（带圆角和轻微阴影效果）
+	•	奖励提示：systemYellow
+	•	文字颜色：label 与 secondaryLabel
+
+⸻
+
+2.4 设置页面
+
+功能与展示：
+	•	决策库管理：
+	•	使用 UITableView 展示决策项列表。
+	•	每个列表项左侧可使用系统图标表示类别（例如，旅游使用 “airplane”，美食使用 “fork.knife”，电影使用 “film”）。
+	•	列表项背景使用 systemBackground，文字颜色为 label。
+	•	音效与动画设置：
+	•	使用 UISwitch 控件来开关音效与动画。
+	•	可搭配 SF Symbols 中的小图标 “speaker.wave.2.fill” 作为音效提示。
+	•	主题与外观设置：
+	•	提供切换浅色/暗色模式的选项（利用 iOS 13+ 内置暗黑模式）。
+	•	可使用 “paintbrush.fill” 图标表示主题选择项。
+
+配色方案：
+	•	页面背景：systemGroupedBackground（分组列表风格）
+	•	列表项背景：secondarySystemBackground
+	•	控件颜色：遵循系统默认色，确保统一性
+
+⸻
+
+2.5 历史记录页面
+
+功能与展示：
+	•	记录列表：
+	•	使用 UITableView 展示历史决策记录，每条记录显示决策类别、建议摘要和决策时间。
+	•	每个列表项左侧可使用系统图标（例如 “clock.fill” 或 “doc.text.fill”）表示记录信息。
+	•	详情查看：
+	•	点击记录项进入详情页面，详情页顶部使用与结果页面一致的图标风格显示完整信息。
+	•	删除与清空：
+	•	支持单个记录的左滑删除操作。
+	•	删除确认对话框中可使用 “exclamationmark.triangle.fill” 图标，颜色使用 systemRed。
+
+配色方案：
+	•	背景色：systemBackground
+	•	列表项背景：secondarySystemBackground
+	•	图标颜色：通常为 label 色；删除提示使用 systemRed
+
+⸻
+
+3. 技术架构与页面交互
+
+架构设计：
+	•	采用 MVC 模式：
+	•	Model 层： 包括决策项与历史记录数据模型（使用 Core Data 或 UserDefaults 存储）。
+	•	View 层： 每个页面对应一个 UIViewController（首页、游戏页、结果页、设置页、历史记录页），布局通过 Storyboard 或纯代码实现。
+	•	Controller 层： 负责页面跳转、数据传递和业务逻辑（如随机生成、符号匹配）的处理。
+
+页面导航流程：
+	•	首页 → 游戏页：
+	•	用户在首页选择决策类别后，点击 “Start Decision”，通过 UINavigationController 推入游戏页面，并传递所选类别数据。
+	•	游戏页 → 结果页：
+	•	当所有转轮停止后，业务逻辑计算最终决策结果，并通过 push 或模态方式展示结果页面。
+	•	结果页操作：
+	•	“Try Again” 重新启动游戏；“Save Record” 保存当前决策及时间戳到历史记录；“Share” 调用 UIActivityViewController 进行分享。
+	•	设置与历史记录页：
+	•	可通过底部标签栏或侧边菜单进入，设置页的变更（例如决策库调整）即时反馈至首页和游戏页。
+
+⸻
+
+4. 开发细节与注意事项
+	•	UIKit 与 iOS 13+ 兼容：
+	•	使用 Auto Layout 和 Size Classes 适配不同设备。
+	•	全面支持暗黑模式，所有颜色采用系统色。
+	•	动画与音效实现：
+	•	采用 UIView 动画及 CADisplayLink 实现转轮动画，使用 AVFoundation 播放音效。
+	•	数据持久化：
+	•	决策项和历史记录采用 Core Data 管理，部分设置项可使用 UserDefaults。

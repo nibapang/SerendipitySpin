@@ -1,0 +1,18 @@
+PODS:
+  - LookinServer (1.2.8):
+    - LookinServer/Core (= 1.2.8)
+  - LookinServer/Core (1.2.8)
+
+DEPENDENCIES:
+  - LookinServer
+
+SPEC REPOS:
+  trunk:
+    - LookinServer
+
+SPEC CHECKSUMS:
+  LookinServer: 1b2b61c6402ae29fa22182d48f5cd067b4e99e80
+
+PODFILE CHECKSUM: 93cd68b4a2f6d0c22b091e7840bb7226df36438b
+
+COCOAPODS: 1.16.2
