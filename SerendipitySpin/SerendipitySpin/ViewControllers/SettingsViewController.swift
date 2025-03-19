@@ -12,6 +12,7 @@ class SettingsViewController: UIViewController {
     private let settings = Settings.shared
     private let dataManager = DataManager.shared
     private let themeManager = ThemeManager.shared
+    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     
     // MARK: - Section and Row Types
     
@@ -19,6 +20,7 @@ class SettingsViewController: UIViewController {
         case appearance = 0
         case sound = 1
         case decisions = 2
+        case about = 3
         
         var title: String {
             switch self {
@@ -28,6 +30,8 @@ class SettingsViewController: UIViewController {
                 return "Sound & Animation"
             case .decisions:
                 return "Decision Library"
+            case .about:
+                return "About"
             }
         }
     }
@@ -39,6 +43,34 @@ class SettingsViewController: UIViewController {
     private enum SoundRow: Int {
         case sound = 0
         case animation = 1
+    }
+    
+    private enum AboutRow: Int, CaseIterable {
+        case privacy = 0
+        case about = 1
+        case version = 2
+        
+        var title: String {
+            switch self {
+            case .privacy:
+                return "Privacy Policy"
+            case .about:
+                return "About Us"
+            case .version:
+                return "Version"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .privacy:
+                return "hand.raised.fill"
+            case .about:
+                return "info.circle.fill"
+            case .version:
+                return "number.circle.fill"
+            }
+        }
     }
     
     // MARK: - Lifecycle
@@ -109,6 +141,8 @@ extension SettingsViewController: UITableViewDataSource {
             return 2 // 声音和动画设置
         case .decisions:
             return DecisionCategory.allCases.count // 所有决策类别
+        case .about:
+            return AboutRow.allCases.count // 关于部分的所有行
         }
     }
     
@@ -124,6 +158,8 @@ extension SettingsViewController: UITableViewDataSource {
             return soundCell(for: indexPath)
         case .decisions:
             return decisionCell(for: indexPath)
+        case .about:
+            return aboutCell(for: indexPath)
         }
     }
     
@@ -225,6 +261,47 @@ extension SettingsViewController: UITableViewDataSource {
         
         return cell
     }
+    
+    private func aboutCell(for indexPath: IndexPath) -> UITableViewCell {
+        guard let row = AboutRow(rawValue: indexPath.row) else { 
+            return tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        }
+        
+        let cell: UITableViewCell
+        if row == .version {
+            // 为版本号创建 value1 样式的单元格
+            cell = UITableViewCell(style: .value1, reuseIdentifier: nil)
+        } else {
+            cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        }
+        
+        // 设置单元格样式
+        cell.backgroundColor = themeManager.mainBackgroundColor.withAlphaComponent(0.5)
+        cell.textLabel?.textColor = themeManager.primaryTextColor
+        cell.detailTextLabel?.textColor = themeManager.secondaryTextColor
+        cell.tintColor = themeManager.primaryButtonColor
+        
+        // 设置图标
+        let icon = UIImage(systemName: row.icon)
+        cell.imageView?.image = icon
+        cell.imageView?.tintColor = themeManager.accentTextColor
+        
+        // 设置标题和详细信息
+        cell.textLabel?.text = row.title
+        
+        // 为版本行添加版本号
+        if row == .version {
+            cell.detailTextLabel?.text = appVersion
+            cell.selectionStyle = .none
+            cell.accessoryType = .none
+            cell.textLabel?.font = .systemFont(ofSize: 16)
+            cell.detailTextLabel?.font = .systemFont(ofSize: 16)
+        } else {
+            cell.accessoryType = .disclosureIndicator
+        }
+        
+        return cell
+    }
 }
 
 // MARK: - UITableViewDelegate
@@ -238,18 +315,48 @@ extension SettingsViewController: UITableViewDelegate {
         
         switch sectionType {
         case .appearance:
-            // 切换主题设置 (iOS 13+ 系统级设置，此处只是示例)
-            let alertController = UIAlertController(title: "Theme", message: "Theme settings are controlled by your device settings.", preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alertController, animated: true)
+            handleAppearanceTap()
         case .sound:
-            // 已经使用开关控件处理
-            break
+            break // 已经使用开关控件处理
         case .decisions:
-            // 打开决策类别编辑页面
-            let category = DecisionCategory.allCases[indexPath.row]
-            let decisionListVC = DecisionListViewController(category: category)
-            navigationController?.pushViewController(decisionListVC, animated: true)
+            handleDecisionsTap(at: indexPath)
+        case .about:
+            handleAboutTap(at: indexPath)
+        }
+    }
+    
+    private func handleAppearanceTap() {
+        let alertController = UIAlertController(title: "Theme", message: "Theme settings are controlled by your device settings.", preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alertController, animated: true)
+    }
+    
+    private func handleDecisionsTap(at indexPath: IndexPath) {
+        let category = DecisionCategory.allCases[indexPath.row]
+        let decisionListVC = DecisionListViewController(category: category)
+        navigationController?.pushViewController(decisionListVC, animated: true)
+    }
+    
+    private func handleAboutTap(at indexPath: IndexPath) {
+        guard let row = AboutRow(rawValue: indexPath.row) else { return }
+        
+        switch row {
+        case .privacy:
+            let privacyVC = UIViewController()
+            privacyVC.title = "Privacy Policy"
+            privacyVC.view.backgroundColor = themeManager.mainBackgroundColor
+            // 这里添加隐私协议的具体内容
+            navigationController?.pushViewController(privacyVC, animated: true)
+            
+        case .about:
+            let aboutVC = UIViewController()
+            aboutVC.title = "About Us"
+            aboutVC.view.backgroundColor = themeManager.mainBackgroundColor
+            // 这里添加关于我们的具体内容
+            navigationController?.pushViewController(aboutVC, animated: true)
+            
+        case .version:
+            break // 版本号不需要点击响应
         }
     }
 }
