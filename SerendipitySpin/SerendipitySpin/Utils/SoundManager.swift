@@ -14,17 +14,18 @@ class SoundManager {
     
     private func setupSounds() {
         // 加载音效资源
-        if let spinSoundPath = Bundle.main.path(forResource: "spin", ofType: "wav") {
+        if let spinSoundPath = Bundle.main.path(forResource: "spin", ofType: "mp3") {
             let spinSoundUrl = URL(fileURLWithPath: spinSoundPath)
             do {
                 spinSound = try AVAudioPlayer(contentsOf: spinSoundUrl)
+                spinSound?.numberOfLoops = -1;
                 spinSound?.prepareToPlay()
             } catch {
                 print("Error loading spin sound: \(error)")
             }
         }
         
-        if let winSoundPath = Bundle.main.path(forResource: "win", ofType: "wav") {
+        if let winSoundPath = Bundle.main.path(forResource: "win", ofType: "mp3") {
             let winSoundUrl = URL(fileURLWithPath: winSoundPath)
             do {
                 winSound = try AVAudioPlayer(contentsOf: winSoundUrl)
@@ -34,7 +35,7 @@ class SoundManager {
             }
         }
         
-        if let stopSoundPath = Bundle.main.path(forResource: "stop", ofType: "wav") {
+        if let stopSoundPath = Bundle.main.path(forResource: "stop", ofType: "mp3") {
             let stopSoundUrl = URL(fileURLWithPath: stopSoundPath)
             do {
                 stopSound = try AVAudioPlayer(contentsOf: stopSoundUrl)
@@ -63,6 +64,13 @@ class SoundManager {
         if Settings.shared.isSoundEnabled {
             stopSound?.currentTime = 0
             stopSound?.play()
+            spinSound?.stop()
         }
     }
-} 
+    
+    func stopAllSound() {
+        spinSound?.stop()
+        winSound?.stop()
+        stopSound?.stop()
+    }
+}

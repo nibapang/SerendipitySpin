@@ -31,6 +31,11 @@ class GameViewController: UIViewController {
         loadSymbols()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        SoundManager.shared.stopAllSound()
+    }
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         backgroundGradientLayer.frame = view.bounds
