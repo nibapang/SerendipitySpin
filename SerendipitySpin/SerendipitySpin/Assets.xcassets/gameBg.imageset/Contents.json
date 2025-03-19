@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "gameBg.png",
+      "filename" : "游戏框.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
