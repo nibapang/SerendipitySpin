@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  SerendipitySpin
 //
-//  Created by jin fu on 2025/3/19.
+//  Created by Serendipity Spin on 2025/3/19.
 //
 
 import UIKit

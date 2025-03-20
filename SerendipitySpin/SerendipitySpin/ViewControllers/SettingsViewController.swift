@@ -342,10 +342,8 @@ extension SettingsViewController: UITableViewDelegate {
         
         switch row {
         case .privacy:
-            let privacyVC = UIViewController()
+            let privacyVC = UIStoryboard.init(name: "Main", bundle: nil).instantiateInitialViewController() as! PrivacyViewController
             privacyVC.title = "Privacy Policy"
-            privacyVC.view.backgroundColor = themeManager.mainBackgroundColor
-            // 这里添加隐私协议的具体内容
             navigationController?.pushViewController(privacyVC, animated: true)
             
         case .about:
