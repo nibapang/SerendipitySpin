@@ -7,4 +7,8 @@ target 'SerendipitySpin' do
 
   # Pods for SerendipitySpin
   pod 'LookinServer', :configurations => ['Debug']
+  pod 'Firebase/Messaging'
+  pod 'AppsFlyerFramework'
+  pod 'FBSDKCoreKit', '17.4.0'
+  pod 'Adjust'
 end

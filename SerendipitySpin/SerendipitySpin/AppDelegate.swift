@@ -6,13 +6,23 @@
 //
 
 import UIKit
+import FirebaseCore
+import FirebaseMessaging
+import AppsFlyerLib
+import FBSDKCoreKit
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate , AppsFlyerLibDelegate, UNUserNotificationCenterDelegate{
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // 应用全局主题
         ThemeManager.shared.applyThemeToApplication()
+        
+        configureFirebase()
+        configureFacebook(with: application, launchOptions: launchOptions)
+        configureAppsFlyer()
+        
+        configPushPrmission()
         return true
     }
 
@@ -30,5 +40,62 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+    }
+    
+    private func configureFirebase() {
+        FirebaseApp.configure()
+    }
+    
+    private func configureFacebook(with application: UIApplication,
+                                   launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
+        ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+    
+    private func configureAppsFlyer() {
+        let appsFlyer = AppsFlyerLib.shared()
+        appsFlyer.appsFlyerDevKey = UIViewController.spinvilleGetAppsFlyerDevKey()
+        appsFlyer.appleAppID = "6743542611"
+        appsFlyer.waitForATTUserAuthorization(timeoutInterval: 51)
+        appsFlyer.delegate = self
+    }
+    
+    // MARK: - AppsFlyerLibDelegate Methods
+    
+    func onConversionDataSuccess(_ conversionInfo: [AnyHashable: Any]) {
+        print("AppsFlyer conversion data success: \(conversionInfo)")
+    }
+    
+    func onConversionDataFail(_ error: Error) {
+        print("AppsFlyer conversion data error: \(error)")
+    }
+    
+    func configPushPrmission() {
+        UNUserNotificationCenter.current().delegate = self
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(
+          options: authOptions,
+          completionHandler: { _, _ in }
+        )
+        UIApplication.shared.registerForRemoteNotifications()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let userInfo = notification.request.content.userInfo
+        print(userInfo)
+        completionHandler([[.sound]])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        print(userInfo)
+        completionHandler()
+    }
 }
 
