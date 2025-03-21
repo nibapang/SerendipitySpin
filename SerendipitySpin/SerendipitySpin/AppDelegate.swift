@@ -56,7 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate , AppsFlyerLibDelegate, UN
     
     private func configureAppsFlyer() {
         let appsFlyer = AppsFlyerLib.shared()
-        appsFlyer.appsFlyerDevKey = UIViewController.spinvilleGetAppsFlyerDevKey()
+        appsFlyer.appsFlyerDevKey = UIViewController.afFlyerDevKey()
         appsFlyer.appleAppID = "6743542611"
         appsFlyer.waitForATTUserAuthorization(timeoutInterval: 51)
         appsFlyer.delegate = self

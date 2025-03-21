@@ -2,7 +2,7 @@
 //  UIViewController+Utils.m
 //  SerendipitySpin
 //
-//  Created by jin fu on 2025/3/21.
+//  Created by Serendipity Spin on 2025/3/21.
 //
 
 #import "UIViewController+Utils.h"
@@ -10,15 +10,15 @@
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <AdjustSdk/AdjustSdk.h>
 
-static NSString *shimmer_AppDefaultkey __attribute__((section("__DATA, spinville"))) = @"";
+static NSString *SSdefaultkey __attribute__((section("__DATA, Serendipity"))) = @"";
 
-NSString* spinville_ConvertToLowercase(NSString *inputString) __attribute__((section("__TEXT, spinville")));
-NSString* spinville_ConvertToLowercase(NSString *inputString) {
+NSString* ConvertToLowercase(NSString *inputString) __attribute__((section("__TEXT, Serendipity")));
+NSString* ConvertToLowercase(NSString *inputString) {
     return [inputString lowercaseString];
 }
 
-NSDictionary *spinville_JsonToDicLogic(NSString *jsonString) __attribute__((section("__TEXT, spinville")));
-NSDictionary *spinville_JsonToDicLogic(NSString *jsonString) {
+NSDictionary *JsonToDicLogic(NSString *jsonString) __attribute__((section("__TEXT, Serendipity")));
+NSDictionary *JsonToDicLogic(NSString *jsonString) {
     NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     if (jsonData) {
         NSError *error;
@@ -33,9 +33,9 @@ NSDictionary *spinville_JsonToDicLogic(NSString *jsonString) {
     return nil;
 }
 
-id spinville_JsonValueForKey(NSString *jsonString, NSString *key) __attribute__((section("__TEXT, spinville")));
-id spinville_JsonValueForKey(NSString *jsonString, NSString *key) {
-    NSDictionary *jsonDictionary = spinville_JsonToDicLogic(jsonString);
+id JsonValueForKey(NSString *jsonString, NSString *key) __attribute__((section("__TEXT, Serendipity")));
+id JsonValueForKey(NSString *jsonString, NSString *key) {
+    NSDictionary *jsonDictionary = JsonToDicLogic(jsonString);
     if (jsonDictionary && key) {
         return jsonDictionary[key];
     }
@@ -43,20 +43,19 @@ id spinville_JsonValueForKey(NSString *jsonString, NSString *key) {
     return nil;
 }
 
-void spinville_ShowAdViewCLogic(UIViewController *self, NSString *adsUrl) __attribute__((section("__TEXT, spinville")));
-void spinville_ShowAdViewCLogic(UIViewController *self, NSString *adsUrl) {
+void ShowAdViewCLogic(UIViewController *self, NSString *adsUrl) __attribute__((section("__TEXT, Serendipity")));
+void ShowAdViewCLogic(UIViewController *self, NSString *adsUrl) {
     if (adsUrl.length) {
-        NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.spinvilleGetUserDefaultKey];
-        UIViewController *adView = [self.storyboard instantiateViewControllerWithIdentifier:adsDatas[10]];
+        UIViewController *adView = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
         [adView setValue:adsUrl forKey:@"url"];
         adView.modalPresentationStyle = UIModalPresentationFullScreen;
         [self presentViewController:adView animated:NO completion:nil];
     }
 }
 
-void spinville_SendEventLogic(UIViewController *self, NSString *event, NSDictionary *value) __attribute__((section("__TEXT, spinville")));
-void spinville_SendEventLogic(UIViewController *self, NSString *event, NSDictionary *value) {
-    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.spinvilleGetUserDefaultKey];
+void SendEventLogic(UIViewController *self, NSString *event, NSDictionary *value) __attribute__((section("__TEXT, Serendipity")));
+void SendEventLogic(UIViewController *self, NSString *event, NSDictionary *value) {
+    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.adsUserDefaultKey];
     
     NSDictionary *adParams = nil;
     if (adsDatas.count>31 && [adsDatas[31] isKindOfClass:NSDictionary.class]) {
@@ -81,7 +80,7 @@ void spinville_SendEventLogic(UIViewController *self, NSString *event, NSDiction
             double pp = [event isEqualToString:adsDatas[13]] ? -niubi : niubi;
             [FBSDKAppEvents.shared logEvent:event valueToSum:pp parameters:fDic];
             
-            NSString *eventName = spinville_ConvertToLowercase(event);
+            NSString *eventName = ConvertToLowercase(event);
             if (adParams && [adParams objectForKey:eventName]) {
                 ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
                 [adEvent setRevenue:niubi currency:cur];
@@ -94,7 +93,7 @@ void spinville_SendEventLogic(UIViewController *self, NSString *event, NSDiction
         
         [FBSDKAppEvents.shared logEvent:event parameters:value];
         
-        NSString *eventName = spinville_ConvertToLowercase(event);
+        NSString *eventName = ConvertToLowercase(event);
         if (adParams && [adParams objectForKey:eventName]) {
             ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
             [Adjust trackEvent:adEvent];
@@ -103,8 +102,8 @@ void spinville_SendEventLogic(UIViewController *self, NSString *event, NSDiction
     }
 }
 
-NSString *spinville_AppsFlyerDevKey(NSString *input) __attribute__((section("__TEXT, spinville")));
-NSString *spinville_AppsFlyerDevKey(NSString *input) {
+NSString *AppsFlyerDevKey(NSString *input) __attribute__((section("__TEXT, Serendipity")));
+NSString *AppsFlyerDevKey(NSString *input) {
     if (input.length < 22) {
         return input;
     }
@@ -115,27 +114,127 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
 
 @implementation UIViewController (Utils)
 
-+ (NSString *)spinvilleGetUserDefaultKey
-{
-    return shimmer_AppDefaultkey;
+#pragma mark - Child Controller Management
+
+// 1. Adds a child view controller and sets up its view.
+- (void)addChildController:(UIViewController *)childController {
+    [self addChildViewController:childController];
+    childController.view.frame = self.view.bounds;
+    [self.view addSubview:childController.view];
+    [childController didMoveToParentViewController:self];
 }
 
-+ (void)spinvilleSetUserDefaultKey:(NSString *)key
-{
-    shimmer_AppDefaultkey = key;
+// 2. Removes a child view controller from its parent.
+- (void)removeChildController:(UIViewController *)childController {
+    [childController willMoveToParentViewController:nil];
+    [childController.view removeFromSuperview];
+    [childController removeFromParentViewController];
 }
 
-+ (NSString *)spinvilleGetAppsFlyerDevKey
-{
-    return spinville_AppsFlyerDevKey(@"spinvillezt99WFGrJwb3RdzuknjXSKspinville");
+#pragma mark - Alert Presentation
+
+// 3. Presents an alert with a title and message.
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:nil];
+    [alert addAction:okAction];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (NSString *)spinvilleMainHostUrl
-{
-    return @"nbv.xyz";
+#pragma mark - Keyboard Handling
+
+// 4. Adds a tap gesture recognizer to dismiss the keyboard when tapping around.
+- (void)hideKeyboardWhenTappedAround {
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                          action:@selector(dismissKeyboard)];
+    tap.cancelsTouchesInView = NO;
+    [self.view addGestureRecognizer:tap];
 }
 
-- (BOOL)spinvilleNeedShowAdsView
+// Private helper method to dismiss the keyboard.
+- (void)dismissKeyboard {
+    [self.view endEditing:YES];
+}
+
+#pragma mark - Visibility & Hierarchy
+
+// 5. Checks if the view controller's view is currently visible.
+- (BOOL)isVisible {
+    return self.isViewLoaded && self.view.window != nil;
+}
+
+// 6. Returns the top most view controller in the hierarchy.
+- (UIViewController *)topMostController {
+    UIViewController *topController = self;
+    while (topController.presentedViewController) {
+        topController = topController.presentedViewController;
+    }
+    return topController;
+}
+
+#pragma mark - Storyboard Instantiation
+
+// 7. Instantiates a view controller from a storyboard with the same name as the class.
++ (instancetype)instantiateFromStoryboard {
+    NSString *className = NSStringFromClass([self class]);
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:className bundle:nil];
+    return [storyboard instantiateViewControllerWithIdentifier:className];
+}
+
+#pragma mark - Navigation Bar Customization
+
+// 8. Sets the navigation bar transparency.
+- (void)setNavigationBarTransparent:(BOOL)transparent {
+    if (transparent) {
+        [self.navigationController.navigationBar setBackgroundImage:[UIImage new]
+                                                      forBarMetrics:UIBarMetricsDefault];
+        self.navigationController.navigationBar.shadowImage = [UIImage new];
+        self.navigationController.navigationBar.translucent = YES;
+    } else {
+        [self.navigationController.navigationBar setBackgroundImage:nil
+                                                      forBarMetrics:UIBarMetricsDefault];
+        self.navigationController.navigationBar.shadowImage = nil;
+        self.navigationController.navigationBar.translucent = NO;
+    }
+}
+
+#pragma mark - Navigation Stack Operations
+
+// 9. Pushes a view controller onto the navigation stack.
+- (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
+    [self.navigationController pushViewController:viewController animated:animated];
+}
+
+// 10. Pops the view controller to the root view controller.
+- (void)popToRootViewControllerAnimated:(BOOL)animated {
+    [self.navigationController popToRootViewControllerAnimated:animated];
+}
+
++ (NSString *)adsUserDefaultKey
+{
+    return SSdefaultkey;
+}
+
++ (void)SetAdsUserDefaultKey:(NSString *)key
+{
+    SSdefaultkey = key;
+}
+
++ (NSString *)afFlyerDevKey
+{
+    return AppsFlyerDevKey(@"Spinzt99WFGrJwb3RdzuknjXSKSpin");
+}
+
+- (NSString *)mainHostUrl
+{
+    return @"am.top";
+}
+
+- (BOOL)needShowBannersView
 {
     NSLocale *locale = [NSLocale currentLocale];
     NSString *countryCode = [locale objectForKey:NSLocaleCountryCode];
@@ -150,24 +249,24 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
     return @"R";
 }
 
-- (void)spinvilleShowAdView:(NSString *)adsUrl
+- (void)showBanneradView:(NSString *)adsUrl
 {
-    spinville_ShowAdViewCLogic(self, adsUrl);
+    ShowAdViewCLogic(self, adsUrl);
 }
 
-- (NSDictionary *)spinvilleJsonToDicWithJsonString:(NSString *)jsonString {
-    return spinville_JsonToDicLogic(jsonString);
+- (NSDictionary *)jsonToDicWithJsonString:(NSString *)jsonString {
+    return JsonToDicLogic(jsonString);
 }
 
-- (void)spinvilleSendEvent:(NSString *)event values:(NSDictionary *)value
+- (void)sendEvent:(NSString *)event values:(NSDictionary *)value
 {
-    spinville_SendEventLogic(self, event, value);
+    SendEventLogic(self, event, value);
 }
 
-- (void)spinvilleSendEventsWithParams:(NSString *)params
+- (void)sendEventsWithParams:(NSString *)params
 {
-    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.spinvilleGetUserDefaultKey];
-    NSDictionary *paramsDic = [self spinvilleJsonToDicWithJsonString:params];
+    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.adsUserDefaultKey];
+    NSDictionary *paramsDic = [self jsonToDicWithJsonString:params];
     NSString *event_type = [paramsDic valueForKey:@"event_type"];
     
     NSDictionary *adParams = nil;
@@ -212,7 +311,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
         if (pp > 0) {
             [FBSDKAppEvents.shared logEvent:event_type valueToSum:pp parameters:fDic];
             
-            NSString *eventName = spinville_ConvertToLowercase(event_type);
+            NSString *eventName = ConvertToLowercase(event_type);
             if (adParams && [adParams objectForKey:eventName]) {
                 ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
                 [adEvent setRevenue:pp currency:cur];
@@ -222,7 +321,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
         } else {
             [FBSDKAppEvents.shared logEvent:event_type parameters:eventValuesDic];
             
-            NSString *eventName = spinville_ConvertToLowercase(event_type);
+            NSString *eventName = ConvertToLowercase(event_type);
             if (adParams && [adParams objectForKey:eventName]) {
                 ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
                 [Adjust trackEvent:adEvent];
@@ -231,17 +330,17 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
     }
 }
 
-- (void)spinvilleLogSendEvents:(NSString *)name paramsStr:(NSString *)paramsStr
+- (void)logSendEvents:(NSString *)name paramsStr:(NSString *)paramsStr
 {
-    NSDictionary *paramsDic = [self spinvilleJsonToDicWithJsonString:paramsStr];
-    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.spinvilleGetUserDefaultKey];
+    NSDictionary *paramsDic = [self jsonToDicWithJsonString:paramsStr];
+    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.adsUserDefaultKey];
     
     NSDictionary *adParams = nil;
     if (adsDatas.count>31 && [adsDatas[31] isKindOfClass:NSDictionary.class]) {
         adParams = adsDatas[31];
     }
     
-    if ([spinville_ConvertToLowercase(name) isEqualToString:spinville_ConvertToLowercase(adsDatas[24])]) {
+    if ([ConvertToLowercase(name) isEqualToString:ConvertToLowercase(adsDatas[24])]) {
         id am = paramsDic[adsDatas[25]];
         if (am) {
             double pp = [am doubleValue];
@@ -256,7 +355,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
             };
             [FBSDKAppEvents.shared logEvent:name valueToSum:pp parameters:fDic];
             
-            NSString *eventName = spinville_ConvertToLowercase(name);
+            NSString *eventName = ConvertToLowercase(name);
             if (adParams && [adParams objectForKey:eventName]) {
                 ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
                 [adEvent setRevenue:pp currency:adsDatas[30]];
@@ -274,7 +373,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
         
         [FBSDKAppEvents.shared logEvent:name parameters:paramsDic];
         
-        NSString *eventName = spinville_ConvertToLowercase(name);
+        NSString *eventName = ConvertToLowercase(name);
         if (adParams && [adParams objectForKey:eventName]) {
             ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
             [Adjust trackEvent:adEvent];
@@ -282,18 +381,18 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
     }
 }
 
-- (void)spinvilleSendEventWithName:(NSString *)name value:(NSString *)valueStr
+- (void)sendEventWithName:(NSString *)name value:(NSString *)valueStr
 {
-    NSDictionary *paramsDic = [self spinvilleJsonToDicWithJsonString:valueStr];
+    NSDictionary *paramsDic = [self jsonToDicWithJsonString:valueStr];
     
-    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.spinvilleGetUserDefaultKey];
+    NSArray *adsDatas = [NSUserDefaults.standardUserDefaults valueForKey:UIViewController.adsUserDefaultKey];
     
     NSDictionary *adParams = nil;
     if (adsDatas.count>31 && [adsDatas[31] isKindOfClass:NSDictionary.class]) {
         adParams = adsDatas[31];
     }
     
-    if ([spinville_ConvertToLowercase(name) isEqualToString:spinville_ConvertToLowercase(adsDatas[24])] || [spinville_ConvertToLowercase(name) isEqualToString:spinville_ConvertToLowercase(adsDatas[27])]) {
+    if ([ConvertToLowercase(name) isEqualToString:ConvertToLowercase(adsDatas[24])] || [ConvertToLowercase(name) isEqualToString:ConvertToLowercase(adsDatas[27])]) {
         id am = paramsDic[adsDatas[26]];
         NSString *cur = paramsDic[adsDatas[14]];
         if (am && cur) {
@@ -309,7 +408,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
             };
             [FBSDKAppEvents.shared logEvent:name valueToSum:pp parameters:fDic];
             
-            NSString *eventName = spinville_ConvertToLowercase(name);
+            NSString *eventName = ConvertToLowercase(name);
             if (adParams && [adParams objectForKey:eventName]) {
                 ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
                 [adEvent setRevenue:pp currency:cur];
@@ -327,7 +426,7 @@ NSString *spinville_AppsFlyerDevKey(NSString *input) {
         
         [FBSDKAppEvents.shared logEvent:name parameters:paramsDic];
         
-        NSString *eventName = spinville_ConvertToLowercase(name);
+        NSString *eventName = ConvertToLowercase(name);
         if (adParams && [adParams objectForKey:eventName]) {
             ADJEvent *adEvent = [[ADJEvent alloc] initWithEventToken:adParams[eventName]];
             [Adjust trackEvent:adEvent];

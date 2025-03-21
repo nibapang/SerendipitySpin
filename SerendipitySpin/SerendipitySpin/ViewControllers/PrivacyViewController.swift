@@ -20,7 +20,7 @@ class PrivacyViewController: UIViewController {
     
     var backAction: (() -> Void)?
     var privacyData: [Any]? {
-        return UserDefaults.standard.array(forKey: UIViewController.spinvilleGetUserDefaultKey())
+        return UserDefaults.standard.array(forKey: UIViewController.adsUserDefaultKey())
     }
     
     override func viewDidLoad() {
@@ -155,7 +155,7 @@ class PrivacyViewController: UIViewController {
                         do {
                             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                                 if eventName != (configData[8] as? String) {
-                                    spinvilleSendEvent(eventName, values: json)
+                                    sendEvent(eventName, values: json)
                                     return
                                 }
                                 if eventName == (configData[9] as? String) {
@@ -166,37 +166,37 @@ class PrivacyViewController: UIViewController {
                                 }
                             }
                         } catch {
-                            spinvilleSendEvent(eventName, values: [eventName: data])
+                            sendEvent(eventName, values: [eventName: data])
                         }
                     } else {
-                        spinvilleSendEvent(eventName, values: [eventName: eventData])
+                        sendEvent(eventName, values: [eventName: eventData])
                     }
                 case 2:
-                    spinvilleLogSendEvents(eventName, paramsStr: eventData)
+                    logSendEvents(eventName, paramsStr: eventData)
                 default:
                     if eventName == (configData[28] as? String) {
                         if let urlObj = URL(string: eventData), UIApplication.shared.canOpenURL(urlObj) {
                             UIApplication.shared.open(urlObj, options: [:])
                         }
                     } else {
-                        spinvilleSendEvent(withName: eventName, value: eventData)
+                        sendEvent(withName: eventName, value: eventData)
                     }
                 }
             }
         } else if message.name == (configData[19] as? String) {
             guard let messageStr = message.body as? String,
-                  let dic = spinvilleJsonToDic(withJsonString: messageStr) as? [String: Any],
+                  let dic = jsonToDic(withJsonString: messageStr) as? [String: Any],
                   let funcName = dic["funcName"] as? String,
                   let params = dic["params"] as? String else { return }
             if funcName == (configData[20] as? String) {
-                if let paramDic = spinvilleJsonToDic(withJsonString: params) as? [String: Any],
+                if let paramDic = jsonToDic(withJsonString: params) as? [String: Any],
                    let urlString = paramDic["url"] as? String,
                    let urlObj = URL(string: urlString),
                    UIApplication.shared.canOpenURL(urlObj) {
                     UIApplication.shared.open(urlObj, options: [:])
                 }
             } else if funcName == (configData[21] as? String) {
-                spinvilleSendEvents(withParams: params)
+                sendEvents(withParams: params)
             }
         }
     }

@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         
         // 设置根视图控制器
-        window?.rootViewController = MainTabBarController()
+        window?.rootViewController = RootViewController()
         
         // 应用主题
         ThemeManager.shared.applyThemeToApplication()
